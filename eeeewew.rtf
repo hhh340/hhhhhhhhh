@@ -1,0 +1,136 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2818
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 import random\
+\
+class Topic:\
+    def __init__(self, name):\
+        self.name = name\
+\
+class Question:\
+    def __init__(self, topic, question_text, options, correct_answer, points):\
+        self.topic = topic\
+        self.question_text = question_text\
+        self.options = options\
+        self.correct_answer = correct_answer\
+        self.points = points\
+\
+class Team:\
+    def __init__(self, name):\
+        self.name = name\
+        self.score = 0\
+\
+# Initialize Topics\
+topics = [\
+    Topic("Kuwait History"),\
+    Topic("Global Citizenship"),\
+    Topic("Punctuation"),\
+    Topic("Football")\
+]\
+\
+# Initialize Questions\
+questions = [\
+    Question(topics[0], "When did Kuwait gain independence from the UK?", ["1945", "1950", "1961", "1975"], 2, 200),\
+    Question(topics[0], "What is the name of Kuwait\'92s first Emir?", ["Sheikh Mubarak Al-Sabah", "Sheikh Abdullah Al-Salem Al-Sabah", "Sheikh Sabah Al-Ahmad Al-Jaber Al-Sabah", "Sheikh Jaber Al-Mubarak"], 1, 400),\
+    Question(topics[0], "What natural resource made Kuwait rich?", ["Gold", "Oil", "Diamonds", "Silver"], 1, 600),\
+    Question(topics[1], "What does it mean to be a global citizen?", ["Belonging to one country", "Helping others", "Traveling a lot", "Joining a club"], 1, 200),\
+    Question(topics[1], "How does helping others benefit the world?", ["Makes us rich", "Peace and cooperation", "Helps one country", "Fame"], 1, 400),\
+    Question(topics[2], "Where is Kuwait located?", ["Where is Kuwait located.", "Where is Kuwait located?", "Where is Kuwait located!", "Where is Kuwait, located?"], 1, 200),\
+    Question(topics[3], "What is the name of Kuwait's national football team?", ["Kuwait FC", "National Team", "Al-Qadsia", "Al-Arabi"], 1, 200),\
+    Question(topics[3], "How many times has Kuwait won the AFC Asian Cup?", ["Twice", "Once", "Three times", "Never"], 1, 400),\
+]\
+\
+# Initialize Teams\
+team1 = Team(input("Enter Team 1 name: "))\
+team2 = Team(input("Enter Team 2 name: "))\
+teams = [team1, team2]\
+\
+# Track topic usage\
+topic_usage = \{topic.name: 0 for topic in topics\}\
+\
+# Game Logic\
+current_team_index = 0\
+\
+def ask_question(team, topic_name, points):\
+    available_questions = [q for q in questions if q.topic.name == topic_name and q.points == points]\
+    if not available_questions:\
+        print(f"No available questions for \{topic_name\} at \{points\} points.")\
+        return False\
+\
+    question = random.choice(available_questions)\
+    print(f"\\n\{team.name\}, here is your question:")\
+    print(f"\{question.question_text\}")\
+    for i, option in enumerate(question.options):\
+        print(f"\{i + 1\}. \{option\}")\
+    \
+    try:\
+        answer = int(input("Enter your choice (1-4): ")) - 1\
+    except ValueError:\
+        print("Invalid input! No points awarded.")\
+        return False\
+\
+    if answer == question.correct_answer:\
+        print("Correct!")\
+        team.score += points\
+    else:\
+        print("Wrong! The correct answer was:", question.options[question.correct_answer])\
+\
+    questions.remove(question)  # Remove the question from the pool\
+    return True\
+\
+def main_game_loop():\
+    global current_team_index\
+\
+    for _ in range(24):  # 12 questions per team\
+        current_team = teams[current_team_index]\
+        print(f"\\n\{current_team.name\}'s turn.")\
+        print("Topics:")\
+        for i, topic in enumerate(topics):\
+            print(f"\{i + 1\}. \{topic.name\} (\{topic_usage[topic.name]\} used)")\
+\
+        try:\
+            topic_choice = int(input("Choose a topic (1-4): ")) - 1\
+        except ValueError:\
+            print("Invalid input!")\
+            continue\
+\
+        if topic_choice < 0 or topic_choice >= len(topics):\
+            print("Invalid topic number!")\
+            continue\
+\
+        chosen_topic = topics[topic_choice]\
+\
+        if topic_usage[chosen_topic.name] >= 3:\
+            print("Choose another topic, exceeded limit.")\
+            continue\
+\
+        try:\
+            points = int(input("Choose points (200, 400, 600): "))\
+        except ValueError:\
+            print("Invalid input!")\
+            continue\
+\
+        if points not in [200, 400, 600]:\
+            print("Invalid points value!")\
+            continue\
+\
+        topic_usage[chosen_topic.name] += 1\
+        if not ask_question(current_team, chosen_topic.name, points):\
+            topic_usage[chosen_topic.name] -= 1  # Rollback topic usage if question failed\
+\
+        current_team_index = (current_team_index + 1) % len(teams)\
+\
+    print("\\nGame Over! Final Scores:")\
+    for team in teams:\
+        print(f"\{team.name\}: \{team.score\} points")\
+\
+    winner = max(teams, key=lambda t: t.score)\
+    print(f"\\nCongratulations, \{winner.name\}! You are the winner!")\
+\
+if __name__ == "__main__":\
+    main_game_loop()\
+}
